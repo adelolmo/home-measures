@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"flag"
 	"net/http"
 	"database/sql"
 	"encoding/json"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/gorilla/mux"
+	"os"
 )
 
 var db *sql.DB
 
 func init() {
 	var err error
-	db, err = sql.Open("sqlite3", "./foo.db")
+	databaseFile := os.Getenv("HM_DB_FILE")
+	fmt.Printf("HM_DB_FILE: %s\n", databaseFile)
+	db, err = sql.Open("sqlite3", databaseFile)
 	if err != nil {
 		panic(err)
 	}
@@ -45,11 +49,14 @@ type Measure struct {
 }
 
 func main() {
+	host := flag.String("host", "localhost", "Host")
+	port := flag.Int("port", 8080, "Listening port")
+	flag.Parse()
 	router := mux.NewRouter()
 	router.HandleFunc("/measures", getMeasures).Methods("GET")
 	router.HandleFunc("/measures", addMeasure).Methods("POST")
 
-	p := fmt.Sprintf("%s:%s", "localhost", "8080")
+	p := fmt.Sprintf("%s:%d", *host, *port)
 	fmt.Printf("Listening on %s...\n", p)
 	log.Fatal(http.ListenAndServe(p, router))
 }
