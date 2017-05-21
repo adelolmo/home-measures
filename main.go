@@ -5,13 +5,13 @@ import (
 	"log"
 	"time"
 	"flag"
+	"os"
 	"net/http"
 	"database/sql"
 	"encoding/json"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/gorilla/mux"
-	"os"
 )
 
 var db *sql.DB
