@@ -1,0 +1,16 @@
+#!/bin/sh -e
+echo "prerm: $@"
+
+case "$1" in
+    upgrade)
+        systemctl stop home-measures
+    ;;
+
+    remove)
+        systemctl stop home-measures
+        systemctl disable home-measures
+        systemctl daemon-reload
+    ;;
+esac
+
+exit 0

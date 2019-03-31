@@ -1,17 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"time"
-	"flag"
-	"os"
-	"net/http"
 	"database/sql"
 	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/gorilla/mux"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var db *sql.DB
@@ -35,7 +35,7 @@ func init() {
 	`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
-		fmt.Errorf("%q: %s\n", err, sqlStmt)
+		log.Fatalf("%q: %s\n", err, sqlStmt)
 	}
 }
 
@@ -44,12 +44,12 @@ type Measures struct {
 }
 
 type Measure struct {
-	Temperature int `json:"temperature"`
+	Temperature int    `json:"temperature"`
 	CreatedAt   string `json:"createdAt"`
 }
 
 func main() {
-	host := flag.String("host", "localhost", "Host")
+	host := flag.String("host", "0.0.0.0", "Host")
 	port := flag.Int("port", 8080, "Listening port")
 	flag.Parse()
 	router := mux.NewRouter()
@@ -70,7 +70,6 @@ func getMeasures(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	defer rows.Close()
 
 	measures := make([]Measure, 0)
 
@@ -82,20 +81,29 @@ func getMeasures(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		measures = append(measures,
-			Measure{Temperature:m.Temperature,
-				CreatedAt:m.CreatedAt})
+			Measure{Temperature: m.Temperature,
+				CreatedAt: m.CreatedAt})
 
 	}
 	if err = rows.Err(); err != nil {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	json.NewEncoder(w).Encode(Measures{Measures:measures})
+	if err = rows.Close(); err != nil {
+		fmt.Printf("unable to close db rows")
+	}
+
+	if err = json.NewEncoder(w).Encode(Measures{Measures: measures}); err != nil {
+		log.Fatal("cannot serialize measures list")
+	}
 }
 
 func addMeasure(w http.ResponseWriter, req *http.Request) {
-	var m Measure;
-	json.NewDecoder(req.Body).Decode(&m);
+	var m Measure
+	if err:=json.NewDecoder(req.Body).Decode(&m); err!=nil{
+		http.Error(w, "cannot understand request", 400)
+		return
+	}
 
 	stmt, err := db.Prepare("INSERT INTO measures(temperature, created_at) values(?, ?)")
 	if err != nil {
@@ -104,6 +112,11 @@ func addMeasure(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	res, err := stmt.Exec(m.Temperature, time.Now().Format("2006-01-02T15:04:05.511Z"))
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "cannot get measure from db", 500)
+		return
+	}
 	_, err = res.LastInsertId()
 	if err != nil {
 		fmt.Println(err)

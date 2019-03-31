@@ -1,0 +1,15 @@
+[Unit]
+Description=Tiny IoT service to keep temperature measures
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=home-measures
+Group=home-measures
+ExecStart=/opt/home-measures/home-measures -port 8081
+Restart=on-failure
+StandardOutput=syslog+console
+SyslogIdentifier=home-measures
+
+[Install]
+WantedBy=multi-user.target

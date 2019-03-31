@@ -1,0 +1,24 @@
+#!/bin/sh -e
+echo "postinst: $@"
+
+USER=home-measures
+GROUP=home-measures
+HOME=/var/lib/home-measures
+
+case "$1" in
+    configure|reconfigure)
+        [ ! -z "$(getent passwd $USER)" ] || adduser --system --gecos "Home-Measures" --disabled-password --group --home $HOME $USER
+
+        systemctl daemon-reload
+        systemctl enable home-measures
+        systemctl restart home-measures
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+    
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac

@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+case $1 in
+    remove)
+        ;;
+    purge)
+        rm -rf /var/lib/home-measures
+    	userdel --remove home-measures
+        ;;
+    upgrade)
+        ;;
+    *)
+        ;;
+esac

@@ -1,0 +1,9 @@
+Package: home-measures
+Version: {{version}}
+Section: extras
+Priority: standard
+Architecture: {{architecture}}
+Depends: sqlite3
+Maintainer: Andoni del Olmo <andoni.delolmo@gmail.com>
+Installed-Size: {{size}}
+Description: Tiny IoT service to keep temperature measures
