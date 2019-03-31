@@ -49,16 +49,14 @@ type Measure struct {
 }
 
 func main() {
-	host := flag.String("host", "0.0.0.0", "Host")
-	port := flag.Int("port", 8080, "Listening port")
+	port := flag.String("port", ":8080", "Listening port")
 	flag.Parse()
 	router := mux.NewRouter()
 	router.HandleFunc("/measures", getMeasures).Methods("GET")
 	router.HandleFunc("/measures", addMeasure).Methods("POST")
 
-	p := fmt.Sprintf("%s:%d", *host, *port)
-	fmt.Printf("Listening on %s...\n", p)
-	log.Fatal(http.ListenAndServe(p, router))
+	fmt.Printf("Listening on %s...\n", *port)
+	log.Fatal(http.ListenAndServe(*port, router))
 }
 
 func getMeasures(w http.ResponseWriter, req *http.Request) {
