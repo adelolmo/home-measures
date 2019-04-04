@@ -91,6 +91,7 @@ func getMeasures(w http.ResponseWriter, req *http.Request) {
 		fmt.Printf("unable to close db rows")
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(Measures{Measures: measures}); err != nil {
 		log.Fatal("cannot serialize measures list")
 	}
@@ -98,7 +99,7 @@ func getMeasures(w http.ResponseWriter, req *http.Request) {
 
 func addMeasure(w http.ResponseWriter, req *http.Request) {
 	var m Measure
-	if err:=json.NewDecoder(req.Body).Decode(&m); err!=nil{
+	if err := json.NewDecoder(req.Body).Decode(&m); err != nil {
 		http.Error(w, "cannot understand request", 400)
 		return
 	}
@@ -121,4 +122,6 @@ func addMeasure(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
 }
